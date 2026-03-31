@@ -346,6 +346,35 @@ function StatFilterButton({ count, label, active, onClick }) {
   )
 }
 
+function BackToTopButton() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    function handleScroll() {
+      setVisible(window.scrollY > 320)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  if (!visible) {
+    return null
+  }
+
+  return (
+    <button
+      type="button"
+      className="back-to-top"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      aria-label="Back to top"
+    >
+      Back to top
+    </button>
+  )
+}
+
 function App() {
   const [pullRequests, setPullRequests] = useState([])
   const [issues, setIssues] = useState([])
@@ -431,6 +460,7 @@ function App() {
 
   return (
     <main className="app-shell">
+      <BackToTopButton />
       <section className="hero-panel">
         <HeroProfile />
 

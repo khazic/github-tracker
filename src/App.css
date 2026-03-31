@@ -89,7 +89,7 @@
 .identity-card {
   padding: 22px;
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .identity-card__user,
@@ -102,6 +102,12 @@
 .identity-card strong {
   font-size: 2rem;
   color: var(--text-strong);
+}
+
+.identity-card p,
+.stat-card p {
+  margin: 0;
+  line-height: 1.7;
 }
 
 .avatar {
@@ -211,7 +217,7 @@ button {
 }
 
 .stat-card {
-  padding: 20px;
+  padding: 24px 20px;
 }
 
 .stat-card strong {
@@ -223,6 +229,10 @@ button {
 
 .tracking-user strong {
   margin: 0;
+}
+
+.tracking-user {
+  margin: 12px 0 6px;
 }
 
 .stat-actions {
@@ -447,6 +457,20 @@ button {
   color: var(--error-text);
 }
 
+.back-to-top {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 20;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-strong);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
 .empty-state {
   padding: 24px 8px 8px;
   color: var(--muted);
@@ -475,5 +499,10 @@ button {
 
   .hero-links {
     grid-template-columns: 1fr;
+  }
+
+  .back-to-top {
+    right: 16px;
+    bottom: 16px;
   }
 }
