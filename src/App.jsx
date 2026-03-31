@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 const DEFAULT_USER = 'khazic'
-const PAGE_SIZE = 100
-const MAX_PAGES = 3
 const DEFAULT_THEME = 'dark'
 const AGE_BASE_YEAR = 1997
 
@@ -27,98 +25,14 @@ function formatRelative(dateString) {
   return formatter.format(Math.round(diffHours / 24), 'day')
 }
 
-async function searchGithub(query, page) {
-  const params = new URLSearchParams({
-    q: query,
-    sort: 'updated',
-    order: 'desc',
-    per_page: PAGE_SIZE.toString(),
-    page: page.toString(),
-  })
-
-  const response = await fetch(`https://api.github.com/search/issues?${params}`)
+async function fetchTrackerData() {
+  const response = await fetch('/github-tracker/data.json', { cache: 'no-store' })
 
   if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error('GitHub API rate limit hit. Wait a bit and retry.')
-    }
-
-    if (response.status === 422) {
-      throw new Error('GitHub search query failed. Check the username and try again.')
-    }
-
-    throw new Error(`GitHub API request failed with status ${response.status}.`)
+    throw new Error(`Failed to load tracker data: ${response.status}`)
   }
 
   return response.json()
-}
-
-async function fetchPullRequestDetail(ownerRepo, number) {
-  const response = await fetch(`https://api.github.com/repos/${ownerRepo}/pulls/${number}`)
-
-  if (!response.ok) {
-    const error = new Error(`GitHub pull request detail request failed with status ${response.status}.`)
-    error.status = response.status
-    throw error
-  }
-
-  return response.json()
-}
-
-async function fetchAllItems(kind, username) {
-  const query = `${kind} author:${username} archived:false`
-  const pages = []
-
-  for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const payload = await searchGithub(query, page)
-    pages.push(...payload.items)
-
-    if (payload.items.length < PAGE_SIZE) {
-      break
-    }
-  }
-
-  return pages
-}
-
-async function hydratePullRequests(items) {
-  let detailFailures = 0
-
-  const hydrated = await Promise.all(
-    items.map(async (item) => {
-      const ownerRepo = item.repository_url.replace('https://api.github.com/repos/', '')
-      let detail = null
-
-      try {
-        detail = await fetchPullRequestDetail(ownerRepo, item.number)
-      } catch {
-        detailFailures += 1
-      }
-
-      let derivedState = item.state
-
-      if (detail?.merged_at) {
-        derivedState = 'merged'
-      } else if (item.state === 'open' && detail?.draft) {
-        derivedState = 'draft'
-      } else if (item.state === 'closed') {
-        derivedState = 'closed_unmerged'
-      }
-
-      return {
-        ...item,
-        derivedState,
-        merged_at: detail?.merged_at ?? null,
-        draft: detail?.draft ?? false,
-        mergeable_state: detail?.mergeable_state ?? null,
-      }
-    }),
-  )
-
-  return {
-    items: hydrated,
-    detailFailures,
-  }
 }
 
 function buildRepoGroups(items) {
@@ -414,7 +328,7 @@ function App() {
   const [repoQuery, setRepoQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [generatedAt, setGeneratedAt] = useState('')
   const [theme, setTheme] = useState(DEFAULT_THEME)
 
   useEffect(() => {
@@ -427,23 +341,14 @@ function App() {
     async function load() {
       setLoading(true)
       setError('')
-      setNotice('')
 
       try {
-        const [prs, issueItems] = await Promise.all([
-          fetchAllItems('is:pr', DEFAULT_USER),
-          fetchAllItems('is:issue', DEFAULT_USER),
-        ])
-        const { items: hydratedPrs, detailFailures } = await hydratePullRequests(prs)
+        const payload = await fetchTrackerData()
 
         if (!cancelled) {
-          setPullRequests(hydratedPrs)
-          setIssues(issueItems)
-          if (detailFailures > 0) {
-            setNotice(
-              `Some PR detail requests were rate-limited by GitHub, so a few entries may fall back to simpler status labels.`,
-            )
-          }
+          setPullRequests(payload.pullRequests ?? [])
+          setIssues(payload.issues ?? [])
+          setGeneratedAt(payload.generatedAt ?? '')
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -606,7 +511,9 @@ function App() {
       </section>
 
       {loading ? <div className="panel notice">Loading GitHub data...</div> : null}
-      {notice ? <div className="panel notice">{notice}</div> : null}
+      {generatedAt ? (
+        <div className="panel notice">Data snapshot generated {formatRelative(generatedAt)}</div>
+      ) : null}
       {error ? <div className="panel notice error">{error}</div> : null}
 
       {!loading && !error ? (

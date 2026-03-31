@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "fetch:data": "node scripts/fetch-github-data.mjs",
     "build": "vite build --base=/github-tracker/",
     "lint": "eslint .",
     "preview": "vite preview"
