@@ -440,7 +440,7 @@ function HeroProfile() {
           rel="noreferrer"
         >
           <span>Academic homepage</span>
-          <strong>Google Scholar</strong>
+          <strong>Google Scholar / ntydloAAAAAJ</strong>
         </a>
         <a
           href="https://khazzz1c.notion.site/Khazzz1c-s-Blog-post-151d29780b58801bb2bddd42eb81c73d?source=copy_link"
@@ -448,11 +448,11 @@ function HeroProfile() {
           rel="noreferrer"
         >
           <span>Blog</span>
-          <strong>Notion logs</strong>
+          <strong>Notion / Khazzz1c-s-Blog-post</strong>
         </a>
         <a href="https://x.com/Imkhazzz1c" target="_blank" rel="noreferrer">
           <span>Social</span>
-          <strong>X / @Imkhazzz1c</strong>
+          <strong>X / Imkhazzz1c</strong>
         </a>
       </div>
 
@@ -465,15 +465,6 @@ function HeroProfile() {
           {displayAge}, caffeinated, terminally online, and still trying to turn buggy life into
           shippable code. Big dreams, tiny balance, no rage quit yet.
         </p>
-      </div>
-
-      <div className="recent-links">
-        {RECENT_LINKS.map((item) => (
-          <a key={`${item.type}-${item.title}`} href={item.href} target="_blank" rel="noreferrer">
-            <span>[{item.type}]</span>
-            <strong>{item.title}</strong>
-          </a>
-        ))}
       </div>
     </section>
   )
@@ -533,6 +524,20 @@ function BackToTopButton() {
     >
       Back to top
     </button>
+  )
+}
+
+function RecentLinks() {
+  return (
+    <div className="recent-links">
+      <p className="eyebrow">Recent</p>
+      {RECENT_LINKS.map((item) => (
+        <a key={`${item.type}-${item.title}`} href={item.href} target="_blank" rel="noreferrer">
+          <span>[{item.type}]</span>
+          <strong>{item.title}</strong>
+        </a>
+      ))}
+    </div>
   )
 }
 
@@ -638,6 +643,7 @@ function App() {
               This site is intentionally scoped to one account only: public PRs, public issues, and
               the ongoing debugging log of one overfit human.
             </p>
+            <RecentLinks />
           </section>
         </div>
       </section>
