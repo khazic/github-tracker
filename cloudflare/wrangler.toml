@@ -1,0 +1,9 @@
+name = "github-tracker-api"
+main = "worker.mjs"
+compatibility_date = "2026-03-31"
+
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+GITHUB_USERNAME = "khazic"

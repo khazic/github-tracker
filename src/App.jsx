@@ -26,13 +26,39 @@ function formatRelative(dateString) {
 }
 
 async function fetchTrackerData() {
-  const response = await fetch('/github-tracker/data.json', { cache: 'no-store' })
+  let workerEndpoint = ''
 
-  if (!response.ok) {
-    throw new Error(`Failed to load tracker data: ${response.status}`)
+  try {
+    const configResponse = await fetch('/github-tracker/worker-config.json', { cache: 'no-store' })
+    if (configResponse.ok) {
+      const config = await configResponse.json()
+      workerEndpoint = config.endpoint ?? ''
+    }
+  } catch {
+    workerEndpoint = ''
   }
 
-  return response.json()
+  if (workerEndpoint) {
+    try {
+      const workerResponse = await fetch(`${workerEndpoint.replace(/\/$/, '')}/tracker?refresh=1`, {
+        cache: 'no-store',
+      })
+
+      if (workerResponse.ok) {
+        return workerResponse.json()
+      }
+    } catch {
+      // Fall back to the latest static snapshot.
+    }
+  }
+
+  const snapshotResponse = await fetch('/github-tracker/data.json', { cache: 'no-store' })
+
+  if (!snapshotResponse.ok) {
+    throw new Error(`Failed to load tracker data: ${snapshotResponse.status}`)
+  }
+
+  return snapshotResponse.json()
 }
 
 function buildRepoGroups(items) {
