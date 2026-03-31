@@ -5,27 +5,6 @@ const DEFAULT_USER = 'khazic'
 const PAGE_SIZE = 100
 const MAX_PAGES = 3
 const DEFAULT_THEME = 'dark'
-const LIFE_PAST = [
-  "I'm 28",
-  "6'1 but that's my only flex",
-  'got a job + house, but broke from the mortgage',
-  'wallet dies faster than my phone battery',
-  'body wrecked, sleep schedule crashed',
-  'caffeine = daily medicine',
-  'anxiety = permanent roommate',
-  'orders takeout more than seeing friends',
-  'social life: 404 not found',
-  'Mind like buggy code, keeps crashing',
-  'Google is basically my therapist',
-  'gym membership active, calories undefeated',
-  'replies fast, feelings delayed',
-  'loves GitHub & Range Rovers, but only online',
-  'big dreams, tiny balance',
-  "life's roadmap always delayed",
-  'terminally online, borderline becoming part of the server',
-  'an LLM trainer, but life keeps overfitting me',
-]
-
 function formatDate(dateString) {
   return new Intl.DateTimeFormat('en', {
     year: 'numeric',
@@ -362,11 +341,10 @@ function HeroProfile() {
           <p className="eyebrow">Life Past</p>
           <span className="muted">still not rage quitting</span>
         </div>
-        <div className="life-grid">
-          {LIFE_PAST.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </div>
+        <p className="life-summary">
+          28, caffeinated, mortgage-drained, terminally online, and still trying to turn buggy life
+          into shippable code. Big dreams, tiny balance, no rage quit yet.
+        </p>
       </div>
     </section>
   )

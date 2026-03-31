@@ -76,19 +76,14 @@
   margin-bottom: 14px;
 }
 
-.life-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
-}
-
-.life-grid p {
+.life-summary {
   margin: 0;
   padding: 12px 14px;
   border-radius: 16px;
   background: var(--surface-elevated);
   border: 1px solid var(--border);
   color: var(--muted-strong);
+  line-height: 1.7;
 }
 
 .identity-card {
@@ -453,8 +448,7 @@ button {
     justify-self: start;
   }
 
-  .hero-links,
-  .life-grid {
+  .hero-links {
     grid-template-columns: 1fr;
   }
 }
