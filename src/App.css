@@ -188,6 +188,14 @@ button {
   align-items: start;
 }
 
+.repo-toggle {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
 .segmented-control {
   background: var(--surface);
   border-radius: 999px;
@@ -270,6 +278,10 @@ button {
 
 .status-dot.closed {
   background: #ef4444;
+}
+
+.status-dot.merged {
+  background: #a371f7;
 }
 
 .item-copy {

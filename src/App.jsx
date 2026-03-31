@@ -52,6 +52,16 @@ async function searchGithub(query, page) {
   return response.json()
 }
 
+async function fetchPullRequestDetail(ownerRepo, number) {
+  const response = await fetch(`https://api.github.com/repos/${ownerRepo}/pulls/${number}`)
+
+  if (!response.ok) {
+    throw new Error(`GitHub pull request detail request failed with status ${response.status}.`)
+  }
+
+  return response.json()
+}
+
 async function fetchAllItems(kind, username) {
   const query = `${kind} author:${username} archived:false`
   const pages = []
@@ -68,6 +78,22 @@ async function fetchAllItems(kind, username) {
   return pages
 }
 
+async function hydratePullRequests(items) {
+  return Promise.all(
+    items.map(async (item) => {
+      const ownerRepo = item.repository_url.replace('https://api.github.com/repos/', '')
+      const detail = await fetchPullRequestDetail(ownerRepo, item.number)
+      const derivedState = detail.merged_at ? 'merged' : item.state
+
+      return {
+        ...item,
+        derivedState,
+        merged_at: detail.merged_at,
+      }
+    }),
+  )
+}
+
 function buildRepoGroups(items) {
   const groups = new Map()
 
@@ -77,11 +103,12 @@ function buildRepoGroups(items) {
       repo: fullName,
       open: 0,
       closed: 0,
+      merged: 0,
       updatedAt: item.updated_at,
       items: [],
     }
 
-    current[item.state] += 1
+    current[item.derivedState ?? item.state] += 1
     current.updatedAt =
       new Date(item.updated_at) > new Date(current.updatedAt) ? item.updated_at : current.updatedAt
     current.items.push(item)
@@ -97,14 +124,24 @@ function buildStats(items) {
   return items.reduce(
     (acc, item) => {
       acc.total += 1
-      acc[item.state] += 1
+      acc[item.derivedState ?? item.state] += 1
       return acc
     },
-    { total: 0, open: 0, closed: 0 },
+    { total: 0, open: 0, closed: 0, merged: 0 },
   )
 }
 
-function Section({ title, items, filter, setFilter, groups, searchType }) {
+function Section({ title, items, filter, setFilter, groups, searchType, includeMerged = false }) {
+  const [expandedRepos, setExpandedRepos] = useState({})
+  const filterOptions = includeMerged ? ['all', 'open', 'merged', 'closed'] : ['all', 'open', 'closed']
+
+  function toggleRepo(repo) {
+    setExpandedRepos((current) => ({
+      ...current,
+      [repo]: !current[repo],
+    }))
+  }
+
   return (
     <section className="panel section-panel">
       <div className="section-header">
@@ -113,7 +150,7 @@ function Section({ title, items, filter, setFilter, groups, searchType }) {
           <h2>{items.length} items</h2>
         </div>
         <div className="segmented-control" role="tablist" aria-label={`${title} status filter`}>
-          {['all', 'open', 'closed'].map((status) => (
+          {filterOptions.map((status) => (
             <button
               key={status}
               type="button"
@@ -132,18 +169,23 @@ function Section({ title, items, filter, setFilter, groups, searchType }) {
         ) : (
           groups.map((group) => (
             <article key={group.repo} className="repo-card">
-              <div className="repo-card__header">
+              <button type="button" className="repo-card__header repo-toggle" onClick={() => toggleRepo(group.repo)}>
                 <div>
                   <h3>{group.repo}</h3>
                   <p>
-                    {group.items.length} items · {group.open} open · {group.closed} closed
+                    {group.items.length} items · {group.open} open
+                    {includeMerged ? ` · ${group.merged} merged` : ''}
+                    {' · '}
+                    {group.closed} closed
                   </p>
                 </div>
-                <span className="muted">Updated {formatRelative(group.updatedAt)}</span>
-              </div>
+                <span className="muted">
+                  {expandedRepos[group.repo] ? 'Collapse' : 'Expand'} · Updated {formatRelative(group.updatedAt)}
+                </span>
+              </button>
 
               <div className="item-list">
-                {group.items.slice(0, 5).map((item) => (
+                {group.items.slice(0, expandedRepos[group.repo] ? group.items.length : 5).map((item) => (
                   <a
                     key={item.id}
                     className="item-row"
@@ -151,17 +193,17 @@ function Section({ title, items, filter, setFilter, groups, searchType }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <span className={`status-dot ${item.state}`} aria-hidden="true" />
+                    <span className={`status-dot ${item.derivedState ?? item.state}`} aria-hidden="true" />
                     <div className="item-copy">
                       <strong>{item.title}</strong>
                       <span>
-                        #{item.number} · {item.state} · updated {formatDate(item.updated_at)}
+                        #{item.number} · {item.derivedState ?? item.state} · updated {formatDate(item.updated_at)}
                       </span>
                     </div>
                   </a>
                 ))}
 
-                {group.items.length > 5 ? (
+                {group.items.length > 5 && !expandedRepos[group.repo] ? (
                   <a
                     className="view-more"
                     href={`https://github.com/${group.repo}/${searchType}?q=author%3A${encodeURIComponent(
@@ -242,9 +284,10 @@ function App() {
           fetchAllItems('is:pr', username),
           fetchAllItems('is:issue', username),
         ])
+        const hydratedPrs = await hydratePullRequests(prs)
 
         if (!cancelled) {
-          setPullRequests(prs)
+          setPullRequests(hydratedPrs)
           setIssues(issueItems)
         }
       } catch (loadError) {
@@ -269,7 +312,8 @@ function App() {
 
   const filteredPullRequests = useMemo(() => {
     return pullRequests.filter((item) => {
-      const matchStatus = pullRequestFilter === 'all' || item.state === pullRequestFilter
+      const state = item.derivedState ?? item.state
+      const matchStatus = pullRequestFilter === 'all' || state === pullRequestFilter
       const repo = item.repository_url.replace('https://api.github.com/repos/', '')
       const matchRepo = repo.toLowerCase().includes(repoQuery.toLowerCase())
       return matchStatus && matchRepo
@@ -354,6 +398,12 @@ function App() {
               active={pullRequestFilter === 'closed'}
               onClick={() => setPullRequestFilter('closed')}
             />
+            <StatFilterButton
+              count={prStats.merged}
+              label="merged"
+              active={pullRequestFilter === 'merged'}
+              onClick={() => setPullRequestFilter('merged')}
+            />
             <button
               type="button"
               className={`stat-filter subtle ${pullRequestFilter === 'all' ? 'active' : ''}`}
@@ -415,6 +465,7 @@ function App() {
             setFilter={setPullRequestFilter}
             groups={groupedPrs}
             searchType="pulls"
+            includeMerged
           />
           <Section
             title="Issues"
