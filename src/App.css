@@ -8,12 +8,16 @@
   display: grid;
   grid-template-columns: 1.7fr 0.7fr;
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
   margin-bottom: 20px;
 }
 
 .hero-profile {
   padding: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 .hero-profile h1 {
@@ -31,6 +35,8 @@
 .hero-controls {
   display: grid;
   gap: 14px;
+  height: 100%;
+  align-content: start;
 }
 
 .hero-links {
