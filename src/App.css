@@ -33,10 +33,10 @@
 }
 
 .hero-controls {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   height: 100%;
-  align-content: start;
 }
 
 .hero-links {
@@ -97,6 +97,8 @@
   padding: 22px;
   display: grid;
   gap: 14px;
+  flex: 1;
+  align-content: start;
 }
 
 .identity-card__user,
