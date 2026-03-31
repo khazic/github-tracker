@@ -83,12 +83,22 @@ async function hydratePullRequests(items) {
     items.map(async (item) => {
       const ownerRepo = item.repository_url.replace('https://api.github.com/repos/', '')
       const detail = await fetchPullRequestDetail(ownerRepo, item.number)
-      const derivedState = detail.merged_at ? 'merged' : item.state
+      let derivedState = item.state
+
+      if (detail.merged_at) {
+        derivedState = 'merged'
+      } else if (item.state === 'open' && detail.draft) {
+        derivedState = 'draft'
+      } else if (item.state === 'closed') {
+        derivedState = 'closed_unmerged'
+      }
 
       return {
         ...item,
         derivedState,
         merged_at: detail.merged_at,
+        draft: detail.draft,
+        mergeable_state: detail.mergeable_state,
       }
     }),
   )
@@ -102,8 +112,10 @@ function buildRepoGroups(items) {
     const current = groups.get(fullName) ?? {
       repo: fullName,
       open: 0,
+      draft: 0,
       closed: 0,
       merged: 0,
+      closed_unmerged: 0,
       updatedAt: item.updated_at,
       items: [],
     }
@@ -127,13 +139,15 @@ function buildStats(items) {
       acc[item.derivedState ?? item.state] += 1
       return acc
     },
-    { total: 0, open: 0, closed: 0, merged: 0 },
+    { total: 0, open: 0, draft: 0, closed: 0, merged: 0, closed_unmerged: 0 },
   )
 }
 
 function Section({ title, items, filter, setFilter, groups, searchType, includeMerged = false }) {
   const [expandedRepos, setExpandedRepos] = useState({})
-  const filterOptions = includeMerged ? ['all', 'open', 'merged', 'closed'] : ['all', 'open', 'closed']
+  const filterOptions = includeMerged
+    ? ['all', 'open', 'draft', 'merged', 'closed_unmerged']
+    : ['all', 'open', 'closed']
 
   function toggleRepo(repo) {
     setExpandedRepos((current) => ({
@@ -174,9 +188,7 @@ function Section({ title, items, filter, setFilter, groups, searchType, includeM
                   <h3>{group.repo}</h3>
                   <p>
                     {group.items.length} items · {group.open} open
-                    {includeMerged ? ` · ${group.merged} merged` : ''}
-                    {' · '}
-                    {group.closed} closed
+                    {includeMerged ? ` · ${group.draft} draft · ${group.merged} merged · ${group.closed_unmerged} closed without merge` : ` · ${group.closed} closed`}
                   </p>
                 </div>
                 <span className="muted">
@@ -197,7 +209,10 @@ function Section({ title, items, filter, setFilter, groups, searchType, includeM
                     <div className="item-copy">
                       <strong>{item.title}</strong>
                       <span>
-                        #{item.number} · {item.derivedState ?? item.state} · updated {formatDate(item.updated_at)}
+                        #{item.number} · {formatStateLabel(item.derivedState ?? item.state)}
+                        {item.mergeable_state ? ` · ${item.mergeable_state}` : ''}
+                        {' · '}
+                        updated {formatDate(item.updated_at)}
                       </span>
                     </div>
                   </a>
@@ -226,6 +241,77 @@ function Section({ title, items, filter, setFilter, groups, searchType, includeM
 
 function itemAuthor(item) {
   return item.user?.login ?? ''
+}
+
+function formatStateLabel(state) {
+  const labels = {
+    open: 'open',
+    draft: 'draft',
+    merged: 'merged',
+    closed: 'closed',
+    closed_unmerged: 'closed without merge',
+  }
+
+  return labels[state] ?? state
+}
+
+function getAttentionReason(item) {
+  if (item.derivedState === 'draft') {
+    return null
+  }
+
+  if (item.derivedState !== 'open') {
+    return null
+  }
+
+  if (['dirty', 'blocked', 'behind', 'unstable', 'unknown'].includes(item.mergeable_state)) {
+    return `merge state: ${item.mergeable_state}`
+  }
+
+  const updatedHoursAgo = Math.abs(new Date(item.updated_at).getTime() - Date.now()) / (1000 * 60 * 60)
+  if (updatedHoursAgo <= 72) {
+    return 'recently updated open PR'
+  }
+
+  return null
+}
+
+function AttentionSection({ items }) {
+  return (
+    <section className="panel attention-panel">
+      <div className="section-header">
+        <div>
+          <p className="eyebrow">Actionable</p>
+          <h2>Open PRs needing attention</h2>
+        </div>
+        <span className="muted">{items.length} matched</span>
+      </div>
+      <div className="attention-list">
+        {items.length === 0 ? (
+          <div className="empty-state">No open PRs currently match the attention rules.</div>
+        ) : (
+          items.map((item) => (
+            <a
+              key={item.id}
+              className="attention-row"
+              href={item.html_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span className={`status-dot ${item.derivedState ?? item.state}`} aria-hidden="true" />
+              <div className="item-copy">
+                <strong>{item.title}</strong>
+                <span>
+                  {item.repository_url.replace('https://api.github.com/repos/', '')} · #
+                  {item.number} · {getAttentionReason(item)}
+                </span>
+              </div>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+  )
 }
 
 function ThemeToggle({ theme, setTheme }) {
@@ -333,6 +419,15 @@ function App() {
   const issueStats = useMemo(() => buildStats(issues), [issues])
   const groupedPrs = useMemo(() => buildRepoGroups(filteredPullRequests), [filteredPullRequests])
   const groupedIssues = useMemo(() => buildRepoGroups(filteredIssues), [filteredIssues])
+  const attentionPullRequests = useMemo(() => {
+    return pullRequests
+      .filter((item) => getAttentionReason(item))
+      .filter((item) =>
+        item.repository_url.replace('https://api.github.com/repos/', '').toLowerCase().includes(repoQuery.toLowerCase()),
+      )
+      .sort((left, right) => new Date(right.updated_at) - new Date(left.updated_at))
+      .slice(0, 8)
+  }, [pullRequests, repoQuery])
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -393,10 +488,16 @@ function App() {
               onClick={() => setPullRequestFilter('open')}
             />
             <StatFilterButton
-              count={prStats.closed}
-              label="closed"
-              active={pullRequestFilter === 'closed'}
-              onClick={() => setPullRequestFilter('closed')}
+              count={prStats.draft}
+              label="draft"
+              active={pullRequestFilter === 'draft'}
+              onClick={() => setPullRequestFilter('draft')}
+            />
+            <StatFilterButton
+              count={prStats.closed_unmerged}
+              label="closed w/o merge"
+              active={pullRequestFilter === 'closed_unmerged'}
+              onClick={() => setPullRequestFilter('closed_unmerged')}
             />
             <StatFilterButton
               count={prStats.merged}
@@ -457,25 +558,28 @@ function App() {
       {error ? <div className="panel notice error">{error}</div> : null}
 
       {!loading && !error ? (
-        <div className="section-grid">
-          <Section
-            title="Pull Requests"
-            items={filteredPullRequests}
-            filter={pullRequestFilter}
-            setFilter={setPullRequestFilter}
-            groups={groupedPrs}
-            searchType="pulls"
-            includeMerged
-          />
-          <Section
-            title="Issues"
-            items={filteredIssues}
-            filter={issueFilter}
-            setFilter={setIssueFilter}
-            groups={groupedIssues}
-            searchType="issues"
-          />
-        </div>
+        <>
+          <AttentionSection items={attentionPullRequests} />
+          <div className="section-grid">
+            <Section
+              title="Pull Requests"
+              items={filteredPullRequests}
+              filter={pullRequestFilter}
+              setFilter={setPullRequestFilter}
+              groups={groupedPrs}
+              searchType="pulls"
+              includeMerged
+            />
+            <Section
+              title="Issues"
+              items={filteredIssues}
+              filter={issueFilter}
+              setFilter={setIssueFilter}
+              groups={groupedIssues}
+              searchType="issues"
+            />
+          </div>
+        </>
       ) : null}
     </main>
   )

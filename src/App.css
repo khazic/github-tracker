@@ -176,6 +176,32 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.attention-panel {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.attention-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.attention-row {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.attention-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
 .section-panel {
   padding: 20px;
 }
@@ -282,6 +308,14 @@ button {
 
 .status-dot.merged {
   background: #a371f7;
+}
+
+.status-dot.draft {
+  background: #6e7681;
+}
+
+.status-dot.closed_unmerged {
+  background: #f85149;
 }
 
 .item-copy {
