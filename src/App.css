@@ -283,6 +283,75 @@ button {
   align-items: center;
 }
 
+.board-panel {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.board-table {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.board-head,
+.board-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) 110px 110px;
+  gap: 10px;
+  align-items: center;
+}
+
+.board-head {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.board-repo {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  text-decoration: none;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-elevated);
+}
+
+.board-repo strong {
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-repo span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.board-cell {
+  height: 54px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--text-strong);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--surface) calc(100% - (var(--strength) * 100%)), var(--accent) calc(var(--strength) * 100%));
+}
+
+.board-cell--pr {
+  background: color-mix(in srgb, var(--surface) calc(100% - (var(--strength) * 100%)), #58a6ff calc(var(--strength) * 100%));
+}
+
+.board-cell--issue {
+  background: color-mix(in srgb, var(--surface) calc(100% - (var(--strength) * 100%)), #2ea043 calc(var(--strength) * 100%));
+}
+
 .section-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -499,6 +568,11 @@ button {
 
   .hero-links {
     grid-template-columns: 1fr;
+  }
+
+  .board-head,
+  .board-row {
+    grid-template-columns: minmax(0, 1fr) 84px 84px;
   }
 
   .back-to-top {

@@ -100,6 +100,104 @@ function buildStats(items) {
   )
 }
 
+function buildContributionBoard(pullRequests, issues) {
+  const board = new Map()
+
+  for (const item of pullRequests) {
+    const repo = item.repository_url.replace('https://api.github.com/repos/', '')
+    const current = board.get(repo) ?? { repo, prs: 0, issues: 0, updatedAt: item.updated_at }
+    current.prs += 1
+    current.updatedAt =
+      new Date(item.updated_at) > new Date(current.updatedAt) ? item.updated_at : current.updatedAt
+    board.set(repo, current)
+  }
+
+  for (const item of issues) {
+    const repo = item.repository_url.replace('https://api.github.com/repos/', '')
+    const current = board.get(repo) ?? { repo, prs: 0, issues: 0, updatedAt: item.updated_at }
+    current.issues += 1
+    current.updatedAt =
+      new Date(item.updated_at) > new Date(current.updatedAt) ? item.updated_at : current.updatedAt
+    board.set(repo, current)
+  }
+
+  const rows = Array.from(board.values()).sort(
+    (left, right) =>
+      right.prs + right.issues - (left.prs + left.issues) ||
+      new Date(right.updatedAt) - new Date(left.updatedAt),
+  )
+
+  const maxPrs = Math.max(1, ...rows.map((row) => row.prs))
+  const maxIssues = Math.max(1, ...rows.map((row) => row.issues))
+
+  return {
+    rows,
+    maxPrs,
+    maxIssues,
+  }
+}
+
+function ContributionBoard({ board, generatedAt }) {
+  return (
+    <section className="panel board-panel">
+      <div className="section-header">
+        <div>
+          <p className="eyebrow">Board</p>
+          <h2>Repository contribution heatboard</h2>
+        </div>
+        <span className="muted">
+          {generatedAt ? `Updated ${formatRelative(generatedAt)}` : ''}
+        </span>
+      </div>
+
+      <div className="board-table">
+        <div className="board-head">
+          <span>Repository</span>
+          <span>PR</span>
+          <span>Issue</span>
+        </div>
+
+        {board.rows.length === 0 ? (
+          <div className="empty-state">No contribution data yet.</div>
+        ) : (
+          board.rows.map((row) => {
+            const prLevel = row.prs === 0 ? 0 : Math.max(0.18, row.prs / board.maxPrs)
+            const issueLevel = row.issues === 0 ? 0 : Math.max(0.18, row.issues / board.maxIssues)
+
+            return (
+              <div key={row.repo} className="board-row">
+                <a
+                  className="board-repo"
+                  href={`https://github.com/${row.repo}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <strong>{row.repo}</strong>
+                  <span>Last activity {formatDate(row.updatedAt)}</span>
+                </a>
+                <div
+                  className="board-cell board-cell--pr"
+                  style={{ '--strength': prLevel }}
+                  title={`${row.prs} PRs in ${row.repo}`}
+                >
+                  {row.prs}
+                </div>
+                <div
+                  className="board-cell board-cell--issue"
+                  style={{ '--strength': issueLevel }}
+                  title={`${row.issues} issues in ${row.repo}`}
+                >
+                  {row.issues}
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    </section>
+  )
+}
+
 function Section({ title, items, filter, setFilter, groups, searchType, includeMerged = false }) {
   const [expandedRepos, setExpandedRepos] = useState({})
   const filterOptions = includeMerged
@@ -448,6 +546,7 @@ function App() {
   const issueStats = useMemo(() => buildStats(issues), [issues])
   const groupedPrs = useMemo(() => buildRepoGroups(filteredPullRequests), [filteredPullRequests])
   const groupedIssues = useMemo(() => buildRepoGroups(filteredIssues), [filteredIssues])
+  const contributionBoard = useMemo(() => buildContributionBoard(pullRequests, issues), [pullRequests, issues])
   const attentionPullRequests = useMemo(() => {
     return pullRequests
       .filter((item) => getAttentionReason(item))
@@ -567,9 +666,7 @@ function App() {
       </section>
 
       {loading ? <div className="panel notice">Loading GitHub data...</div> : null}
-      {generatedAt ? (
-        <div className="panel notice">Data snapshot generated {formatRelative(generatedAt)}</div>
-      ) : null}
+      {!loading && !error ? <ContributionBoard board={contributionBoard} generatedAt={generatedAt} /> : null}
       {error ? <div className="panel notice error">{error}</div> : null}
 
       {!loading && !error ? (
