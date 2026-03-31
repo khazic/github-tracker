@@ -5,6 +5,26 @@ const DEFAULT_USER = 'khazic'
 const PAGE_SIZE = 100
 const MAX_PAGES = 3
 const DEFAULT_THEME = 'dark'
+const LIFE_PAST = [
+  "I'm 28",
+  "6'1 but that's my only flex",
+  'got a job + house, but broke from the mortgage',
+  'wallet dies faster than my phone battery',
+  'body wrecked, sleep schedule crashed',
+  'caffeine = daily medicine',
+  'anxiety = permanent roommate',
+  'orders takeout more than seeing friends',
+  'social life: 404 not found',
+  'Mind like buggy code, keeps crashing',
+  'Google is basically my therapist',
+  'gym membership active, calories undefeated',
+  'replies fast, feelings delayed',
+  'loves GitHub & Range Rovers, but only online',
+  'big dreams, tiny balance',
+  "life's roadmap always delayed",
+  'terminally online, borderline becoming part of the server',
+  'an LLM trainer, but life keeps overfitting me',
+]
 
 function formatDate(dateString) {
   return new Intl.DateTimeFormat('en', {
@@ -314,6 +334,44 @@ function AttentionSection({ items }) {
   )
 }
 
+function HeroProfile() {
+  return (
+    <section className="panel hero-profile">
+      <div className="hero-profile__intro">
+        <p className="eyebrow">Khazic / public build log</p>
+        <h1>LLM trainer by trade. Debugging life in production.</h1>
+        <p className="lede">
+          Life feels like a bug, but I haven&apos;t rage quit yet. In 2003, I got my first laptop
+          ever. Hope we can ride through the best part of life together.
+        </p>
+      </div>
+
+      <div className="hero-links">
+        <a href="https://scholar.google.com/" target="_blank" rel="noreferrer">
+          <span>Academic homepage</span>
+          <strong>Google Scholar</strong>
+        </a>
+        <a href="https://www.notion.so/" target="_blank" rel="noreferrer">
+          <span>Blog</span>
+          <strong>Notion logs</strong>
+        </a>
+      </div>
+
+      <div className="life-card">
+        <div className="life-card__header">
+          <p className="eyebrow">Life Past</p>
+          <span className="muted">still not rage quitting</span>
+        </div>
+        <div className="life-grid">
+          {LIFE_PAST.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function ThemeToggle({ theme, setTheme }) {
   return (
     <div className="theme-toggle" role="tablist" aria-label="Theme toggle">
@@ -343,8 +401,6 @@ function StatFilterButton({ count, label, active, onClick }) {
 }
 
 function App() {
-  const [inputValue, setInputValue] = useState(DEFAULT_USER)
-  const [username, setUsername] = useState(DEFAULT_USER)
   const [pullRequests, setPullRequests] = useState([])
   const [issues, setIssues] = useState([])
   const [pullRequestFilter, setPullRequestFilter] = useState('all')
@@ -367,8 +423,8 @@ function App() {
 
       try {
         const [prs, issueItems] = await Promise.all([
-          fetchAllItems('is:pr', username),
-          fetchAllItems('is:issue', username),
+          fetchAllItems('is:pr', DEFAULT_USER),
+          fetchAllItems('is:issue', DEFAULT_USER),
         ])
         const hydratedPrs = await hydratePullRequests(prs)
 
@@ -394,7 +450,7 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [username])
+  }, [])
 
   const filteredPullRequests = useMemo(() => {
     return pullRequests.filter((item) => {
@@ -429,53 +485,29 @@ function App() {
       .slice(0, 8)
   }, [pullRequests, repoQuery])
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const trimmed = inputValue.trim()
-
-    if (!trimmed) {
-      return
-    }
-
-    setUsername(trimmed)
-  }
-
   return (
     <main className="app-shell">
       <section className="hero-panel">
-        <div className="hero-copy">
-          <p className="eyebrow">Public GitHub work tracker</p>
-          <h1>Track every public PR and issue you started.</h1>
-          <p className="lede">
-            This page uses GitHub&apos;s public search API to group your authored pull requests and
-            issues by repository, with a fast view of open versus closed work.
-          </p>
-        </div>
+        <HeroProfile />
 
         <div className="hero-controls">
           <ThemeToggle theme={theme} setTheme={setTheme} />
-
-          <form className="search-bar" onSubmit={handleSubmit}>
-            <label htmlFor="username">GitHub username</label>
-            <div className="search-row">
-              <input
-                id="username"
-                value={inputValue}
-                onChange={(event) => setInputValue(event.target.value)}
-                placeholder="octocat"
-                autoComplete="off"
-              />
-              <button type="submit">Load</button>
-            </div>
-          </form>
+          <section className="panel identity-card">
+            <p className="eyebrow">Tracking locked</p>
+            <strong>@{DEFAULT_USER}</strong>
+            <p>
+              This site is intentionally scoped to one account only: public PRs, public issues, and
+              the ongoing debugging log of one overfit human.
+            </p>
+          </section>
         </div>
       </section>
 
       <section className="summary-grid">
         <article className="panel stat-card">
           <span className="stat-label">Tracking</span>
-          <strong>{username}</strong>
-          <p>Public authored activity only</p>
+          <strong>{DEFAULT_USER}</strong>
+          <p>Public GitHub activity only</p>
         </article>
         <article className="panel stat-card">
           <span className="stat-label">Pull requests</span>

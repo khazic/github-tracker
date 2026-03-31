@@ -21,6 +21,7 @@
     linear-gradient(180deg, #0d1117 0%, #161b22 100%);
   --panel: rgba(22, 27, 34, 0.88);
   --surface: #21262d;
+  --surface-elevated: rgba(33, 38, 45, 0.78);
   --border: #30363d;
   --text: #c9d1d9;
   --text-strong: #f0f6fc;
@@ -46,6 +47,7 @@
     linear-gradient(180deg, #f6f8fa 0%, #ffffff 100%);
   --panel: rgba(255, 255, 255, 0.9);
   --surface: #eaedf0;
+  --surface-elevated: rgba(255, 255, 255, 0.94);
   --border: #d0d7de;
   --text: #1f2328;
   --text-strong: #0f172a;
