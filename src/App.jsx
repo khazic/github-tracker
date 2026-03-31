@@ -4,6 +4,38 @@ import './App.css'
 const DEFAULT_USER = 'khazic'
 const DEFAULT_THEME = 'dark'
 const AGE_BASE_YEAR = 1997
+const RECENT_LINKS = [
+  {
+    type: 'Blog',
+    title: 'The history of Vision-Language Model development: from image and text alignment to MLLM',
+    href: 'https://khazzz1c.notion.site/Khazzz1c-s-Blog-post-151d29780b58801bb2bddd42eb81c73d?source=copy_link',
+  },
+  {
+    type: 'Blog',
+    title: 'A brief thought on the location of multimodal coding',
+    href: 'https://khazzz1c.notion.site/Khazzz1c-s-Blog-post-151d29780b58801bb2bddd42eb81c73d?source=copy_link',
+  },
+  {
+    type: 'Blog',
+    title: 'Some simple thoughts on InternVL3',
+    href: 'https://khazzz1c.notion.site/Khazzz1c-s-Blog-post-151d29780b58801bb2bddd42eb81c73d?source=copy_link',
+  },
+  {
+    type: 'Paper',
+    title: 'VEPO: Variable Entropy Policy Optimization for Low-Resource Language Foundation Models',
+    href: 'https://arxiv.org/abs/2603.19152',
+  },
+  {
+    type: 'Paper',
+    title: 'Flatter Tokens are More Valuable for Speculative Draft Model Training',
+    href: 'https://arxiv.org/abs/2601.18902',
+  },
+  {
+    type: 'Paper',
+    title: 'd²Cache: Accelerating Diffusion-Based LLMs via Dual Adaptive Caching',
+    href: 'https://arxiv.org/abs/2509.23094',
+  },
+]
 
 function formatDate(dateString) {
   return new Intl.DateTimeFormat('en', {
@@ -429,6 +461,15 @@ function HeroProfile() {
           {displayAge}, caffeinated, terminally online, and still trying to turn buggy life into
           shippable code. Big dreams, tiny balance, no rage quit yet.
         </p>
+      </div>
+
+      <div className="recent-links">
+        {RECENT_LINKS.map((item) => (
+          <a key={`${item.type}-${item.title}`} href={item.href} target="_blank" rel="noreferrer">
+            <span>[{item.type}]</span>
+            <strong>{item.title}</strong>
+          </a>
+        ))}
       </div>
     </section>
   )
