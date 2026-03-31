@@ -450,6 +450,10 @@ function HeroProfile() {
           <span>Blog</span>
           <strong>Notion logs</strong>
         </a>
+        <a href="https://x.com/Imkhazzz1c" target="_blank" rel="noreferrer">
+          <span>Social</span>
+          <strong>X / @Imkhazzz1c</strong>
+        </a>
       </div>
 
       <div className="life-card">
