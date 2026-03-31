@@ -342,8 +342,8 @@ function HeroProfile() {
           <span className="muted">still not rage quitting</span>
         </div>
         <p className="life-summary">
-          28, caffeinated, mortgage-drained, terminally online, and still trying to turn buggy life
-          into shippable code. Big dreams, tiny balance, no rage quit yet.
+          28, caffeinated, terminally online, and still trying to turn buggy life into shippable
+          code. Big dreams, tiny balance, no rage quit yet.
         </p>
       </div>
     </section>
