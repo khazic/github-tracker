@@ -440,7 +440,7 @@ function HeroProfile() {
           rel="noreferrer"
         >
           <span>Academic homepage</span>
-          <strong>Google Scholar / ntydloAAAAAJ</strong>
+          <strong>Google Scholar / khazzz1c</strong>
         </a>
         <a
           href="https://khazzz1c.notion.site/Khazzz1c-s-Blog-post-151d29780b58801bb2bddd42eb81c73d?source=copy_link"

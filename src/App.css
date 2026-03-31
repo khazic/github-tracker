@@ -119,22 +119,24 @@
 
 .recent-links a {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   gap: 8px;
   text-decoration: none;
-  align-items: baseline;
+  align-items: start;
 }
 
 .recent-links span {
   color: var(--accent);
   font-size: 0.82rem;
   font-weight: 700;
+  text-align: center;
 }
 
 .recent-links strong {
   color: var(--text-strong);
   font-size: 0.92rem;
   line-height: 1.45;
+  display: block;
 }
 
 .avatar {
