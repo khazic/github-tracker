@@ -342,11 +342,19 @@ function HeroProfile() {
       </div>
 
       <div className="hero-links">
-        <a href="https://scholar.google.com/" target="_blank" rel="noreferrer">
+        <a
+          href="https://scholar.google.com/citations?user=ntydloAAAAAJ&hl=zh-CN"
+          target="_blank"
+          rel="noreferrer"
+        >
           <span>Academic homepage</span>
           <strong>Google Scholar</strong>
         </a>
-        <a href="https://www.notion.so/" target="_blank" rel="noreferrer">
+        <a
+          href="https://khazzz1c.notion.site/Khazzz1c-s-Blog-post-151d29780b58801bb2bddd42eb81c73d?source=copy_link"
+          target="_blank"
+          rel="noreferrer"
+        >
           <span>Blog</span>
           <strong>Notion logs</strong>
         </a>
