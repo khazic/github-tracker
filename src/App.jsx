@@ -138,6 +138,9 @@ function buildContributionBoard(pullRequests, issues) {
 }
 
 function ContributionBoard({ board, generatedAt }) {
+  const [expanded, setExpanded] = useState(false)
+  const visibleRows = expanded ? board.rows : board.rows.slice(0, 5)
+
   return (
     <section className="panel board-panel">
       <div className="section-header">
@@ -159,7 +162,7 @@ function ContributionBoard({ board, generatedAt }) {
         {board.rows.length === 0 ? (
           <div className="empty-state">No contribution data yet.</div>
         ) : (
-          board.rows.map((row) => {
+          visibleRows.map((row) => {
             const prLevel = row.prs === 0 ? 0 : Math.max(0.08, row.prs / board.maxPrs)
             const issueLevel = row.issues === 0 ? 0 : Math.max(0.08, row.issues / board.maxIssues)
 
@@ -203,6 +206,12 @@ function ContributionBoard({ board, generatedAt }) {
           })
         )}
       </div>
+
+      {board.rows.length > 5 ? (
+        <button type="button" className="board-toggle" onClick={() => setExpanded((current) => !current)}>
+          {expanded ? 'Show less' : `Show ${board.rows.length - 5} more`}
+        </button>
+      ) : null}
     </section>
   )
 }
