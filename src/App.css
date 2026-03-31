@@ -8,13 +8,18 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: 20px;
-  align-items: end;
+  align-items: start;
   margin-bottom: 20px;
 }
 
 .hero-copy h1 {
   margin-bottom: 12px;
   max-width: 10ch;
+}
+
+.hero-controls {
+  display: grid;
+  gap: 14px;
 }
 
 .lede {
@@ -26,7 +31,30 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 24px;
-  box-shadow: 0 22px 50px rgba(27, 31, 35, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  justify-self: end;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.theme-toggle button {
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.theme-toggle .active {
+  background: var(--toggle-active);
+  color: var(--text-strong);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 3px rgba(1, 4, 9, 0.35);
 }
 
 .search-bar {
@@ -56,7 +84,7 @@
 
 input {
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--input-bg);
   color: var(--text);
   border-radius: 14px;
   padding: 14px 16px;
@@ -69,8 +97,8 @@ button {
   padding: 14px 18px;
   font: inherit;
   font-weight: 700;
-  background: linear-gradient(135deg, #0f766e, #155e75);
-  color: white;
+  background: var(--button-bg);
+  color: var(--button-text);
   cursor: pointer;
 }
 
@@ -93,6 +121,45 @@ button {
   display: block;
   margin: 10px 0 4px;
   font-size: 2rem;
+  color: var(--text-strong);
+}
+
+.stat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.stat-filter {
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  border-radius: 999px;
+}
+
+.stat-filter span {
+  color: var(--text-strong);
+}
+
+.stat-filter.active {
+  color: var(--accent);
+}
+
+.stat-filter.active span {
+  color: var(--accent);
+}
+
+.stat-filter.subtle {
+  padding-inline: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted-strong);
+}
+
+.stat-filter.subtle.active {
+  border-color: var(--accent-soft);
   color: var(--text-strong);
 }
 
@@ -137,7 +204,7 @@ button {
 }
 
 .segmented-control .active {
-  background: white;
+  background: var(--toggle-active);
   color: var(--text-strong);
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
 }
@@ -152,7 +219,7 @@ button {
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.92));
+  background: var(--card-bg);
 }
 
 .repo-card h3,
@@ -229,8 +296,8 @@ button {
 
 .notice.error {
   border-color: rgba(220, 38, 38, 0.22);
-  background: rgba(254, 242, 242, 0.95);
-  color: #991b1b;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 
 .empty-state {
@@ -253,5 +320,9 @@ button {
 
   .search-row {
     flex-direction: column;
+  }
+
+  .theme-toggle {
+    justify-self: start;
   }
 }

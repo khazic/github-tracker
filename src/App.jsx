@@ -4,6 +4,7 @@ import './App.css'
 const DEFAULT_USER = 'khazic'
 const PAGE_SIZE = 100
 const MAX_PAGES = 3
+const DEFAULT_THEME = 'dark'
 
 function formatDate(dateString) {
   return new Intl.DateTimeFormat('en', {
@@ -185,6 +186,34 @@ function itemAuthor(item) {
   return item.user?.login ?? ''
 }
 
+function ThemeToggle({ theme, setTheme }) {
+  return (
+    <div className="theme-toggle" role="tablist" aria-label="Theme toggle">
+      {[
+        { value: 'dark', label: 'Dark' },
+        { value: 'light', label: 'Light' },
+      ].map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          className={theme === option.value ? 'active' : ''}
+          onClick={() => setTheme(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function StatFilterButton({ count, label, active, onClick }) {
+  return (
+    <button type="button" className={`stat-filter ${active ? 'active' : ''}`} onClick={onClick}>
+      <span>{count}</span> {label}
+    </button>
+  )
+}
+
 function App() {
   const [inputValue, setInputValue] = useState(DEFAULT_USER)
   const [username, setUsername] = useState(DEFAULT_USER)
@@ -195,6 +224,11 @@ function App() {
   const [repoQuery, setRepoQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [theme, setTheme] = useState(DEFAULT_THEME)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
 
   useEffect(() => {
     let cancelled = false
@@ -279,19 +313,23 @@ function App() {
           </p>
         </div>
 
-        <form className="search-bar" onSubmit={handleSubmit}>
-          <label htmlFor="username">GitHub username</label>
-          <div className="search-row">
-            <input
-              id="username"
-              value={inputValue}
-              onChange={(event) => setInputValue(event.target.value)}
-              placeholder="octocat"
-              autoComplete="off"
-            />
-            <button type="submit">Load</button>
-          </div>
-        </form>
+        <div className="hero-controls">
+          <ThemeToggle theme={theme} setTheme={setTheme} />
+
+          <form className="search-bar" onSubmit={handleSubmit}>
+            <label htmlFor="username">GitHub username</label>
+            <div className="search-row">
+              <input
+                id="username"
+                value={inputValue}
+                onChange={(event) => setInputValue(event.target.value)}
+                placeholder="octocat"
+                autoComplete="off"
+              />
+              <button type="submit">Load</button>
+            </div>
+          </form>
+        </div>
       </section>
 
       <section className="summary-grid">
@@ -303,16 +341,52 @@ function App() {
         <article className="panel stat-card">
           <span className="stat-label">Pull requests</span>
           <strong>{prStats.total}</strong>
-          <p>
-            {prStats.open} open · {prStats.closed} closed
-          </p>
+          <div className="stat-actions">
+            <StatFilterButton
+              count={prStats.open}
+              label="open"
+              active={pullRequestFilter === 'open'}
+              onClick={() => setPullRequestFilter('open')}
+            />
+            <StatFilterButton
+              count={prStats.closed}
+              label="closed"
+              active={pullRequestFilter === 'closed'}
+              onClick={() => setPullRequestFilter('closed')}
+            />
+            <button
+              type="button"
+              className={`stat-filter subtle ${pullRequestFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setPullRequestFilter('all')}
+            >
+              view all
+            </button>
+          </div>
         </article>
         <article className="panel stat-card">
           <span className="stat-label">Issues</span>
           <strong>{issueStats.total}</strong>
-          <p>
-            {issueStats.open} open · {issueStats.closed} closed
-          </p>
+          <div className="stat-actions">
+            <StatFilterButton
+              count={issueStats.open}
+              label="open"
+              active={issueFilter === 'open'}
+              onClick={() => setIssueFilter('open')}
+            />
+            <StatFilterButton
+              count={issueStats.closed}
+              label="closed"
+              active={issueFilter === 'closed'}
+              onClick={() => setIssueFilter('closed')}
+            />
+            <button
+              type="button"
+              className={`stat-filter subtle ${issueFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setIssueFilter('all')}
+            >
+              view all
+            </button>
+          </div>
         </article>
       </section>
 
