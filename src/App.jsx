@@ -55,7 +55,9 @@ async function fetchPullRequestDetail(ownerRepo, number) {
   const response = await fetch(`https://api.github.com/repos/${ownerRepo}/pulls/${number}`)
 
   if (!response.ok) {
-    throw new Error(`GitHub pull request detail request failed with status ${response.status}.`)
+    const error = new Error(`GitHub pull request detail request failed with status ${response.status}.`)
+    error.status = response.status
+    throw error
   }
 
   return response.json()
@@ -78,15 +80,24 @@ async function fetchAllItems(kind, username) {
 }
 
 async function hydratePullRequests(items) {
-  return Promise.all(
+  let detailFailures = 0
+
+  const hydrated = await Promise.all(
     items.map(async (item) => {
       const ownerRepo = item.repository_url.replace('https://api.github.com/repos/', '')
-      const detail = await fetchPullRequestDetail(ownerRepo, item.number)
+      let detail = null
+
+      try {
+        detail = await fetchPullRequestDetail(ownerRepo, item.number)
+      } catch {
+        detailFailures += 1
+      }
+
       let derivedState = item.state
 
-      if (detail.merged_at) {
+      if (detail?.merged_at) {
         derivedState = 'merged'
-      } else if (item.state === 'open' && detail.draft) {
+      } else if (item.state === 'open' && detail?.draft) {
         derivedState = 'draft'
       } else if (item.state === 'closed') {
         derivedState = 'closed_unmerged'
@@ -95,12 +106,17 @@ async function hydratePullRequests(items) {
       return {
         ...item,
         derivedState,
-        merged_at: detail.merged_at,
-        draft: detail.draft,
-        mergeable_state: detail.mergeable_state,
+        merged_at: detail?.merged_at ?? null,
+        draft: detail?.draft ?? false,
+        mergeable_state: detail?.mergeable_state ?? null,
       }
     }),
   )
+
+  return {
+    items: hydrated,
+    detailFailures,
+  }
 }
 
 function buildRepoGroups(items) {
@@ -386,6 +402,7 @@ function App() {
   const [repoQuery, setRepoQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [theme, setTheme] = useState(DEFAULT_THEME)
 
   useEffect(() => {
@@ -398,17 +415,23 @@ function App() {
     async function load() {
       setLoading(true)
       setError('')
+      setNotice('')
 
       try {
         const [prs, issueItems] = await Promise.all([
           fetchAllItems('is:pr', DEFAULT_USER),
           fetchAllItems('is:issue', DEFAULT_USER),
         ])
-        const hydratedPrs = await hydratePullRequests(prs)
+        const { items: hydratedPrs, detailFailures } = await hydratePullRequests(prs)
 
         if (!cancelled) {
           setPullRequests(hydratedPrs)
           setIssues(issueItems)
+          if (detailFailures > 0) {
+            setNotice(
+              `Some PR detail requests were rate-limited by GitHub, so a few entries may fall back to simpler status labels.`,
+            )
+          }
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -565,6 +588,7 @@ function App() {
       </section>
 
       {loading ? <div className="panel notice">Loading GitHub data...</div> : null}
+      {notice ? <div className="panel notice">{notice}</div> : null}
       {error ? <div className="panel notice error">{error}</div> : null}
 
       {!loading && !error ? (
