@@ -143,51 +143,60 @@ function ContributionBoard({ board, generatedAt }) {
       <div className="section-header">
         <div>
           <p className="eyebrow">Board</p>
-          <h2>Repository contribution heatboard</h2>
+          <h2>Repository contribution map</h2>
         </div>
         <span className="muted">
           {generatedAt ? `Updated ${formatRelative(generatedAt)}` : ''}
         </span>
       </div>
 
-      <div className="board-table">
-        <div className="board-head">
-          <span>Repository</span>
-          <span>PR</span>
-          <span>Issue</span>
-        </div>
+      <div className="board-legend">
+        <span><i className="legend-swatch legend-swatch--pr" /> PR</span>
+        <span><i className="legend-swatch legend-swatch--issue" /> Issue</span>
+      </div>
 
+      <div className="board-chart">
         {board.rows.length === 0 ? (
           <div className="empty-state">No contribution data yet.</div>
         ) : (
           board.rows.map((row) => {
-            const prLevel = row.prs === 0 ? 0 : Math.max(0.18, row.prs / board.maxPrs)
-            const issueLevel = row.issues === 0 ? 0 : Math.max(0.18, row.issues / board.maxIssues)
+            const prLevel = row.prs === 0 ? 0 : Math.max(0.08, row.prs / board.maxPrs)
+            const issueLevel = row.issues === 0 ? 0 : Math.max(0.08, row.issues / board.maxIssues)
 
             return (
-              <div key={row.repo} className="board-row">
+              <div key={row.repo} className="board-item">
                 <a
-                  className="board-repo"
+                  className="board-label"
                   href={`https://github.com/${row.repo}`}
                   target="_blank"
                   rel="noreferrer"
                 >
                   <strong>{row.repo}</strong>
-                  <span>Last activity {formatDate(row.updatedAt)}</span>
+                  <span>{row.prs + row.issues} total · {formatDate(row.updatedAt)}</span>
                 </a>
-                <div
-                  className="board-cell board-cell--pr"
-                  style={{ '--strength': prLevel }}
-                  title={`${row.prs} PRs in ${row.repo}`}
-                >
-                  {row.prs}
-                </div>
-                <div
-                  className="board-cell board-cell--issue"
-                  style={{ '--strength': issueLevel }}
-                  title={`${row.issues} issues in ${row.repo}`}
-                >
-                  {row.issues}
+
+                <div className="board-bars">
+                  <div className="mini-bar-row" title={`${row.prs} PRs in ${row.repo}`}>
+                    <span className="mini-bar-label">PR</span>
+                    <div className="mini-bar-track">
+                      <div
+                        className="mini-bar-fill mini-bar-fill--pr"
+                        style={{ '--strength': prLevel }}
+                      />
+                    </div>
+                    <span className="mini-bar-value">{row.prs}</span>
+                  </div>
+
+                  <div className="mini-bar-row" title={`${row.issues} issues in ${row.repo}`}>
+                    <span className="mini-bar-label">Issue</span>
+                    <div className="mini-bar-track">
+                      <div
+                        className="mini-bar-fill mini-bar-fill--issue"
+                        style={{ '--strength': issueLevel }}
+                      />
+                    </div>
+                    <span className="mini-bar-value">{row.issues}</span>
+                  </div>
                 </div>
               </div>
             )
