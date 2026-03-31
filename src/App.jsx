@@ -503,7 +503,10 @@ function App() {
           <ThemeToggle theme={theme} setTheme={setTheme} />
           <section className="panel identity-card">
             <p className="eyebrow">Tracking locked</p>
-            <strong>@{DEFAULT_USER}</strong>
+            <div className="identity-card__user">
+              <img className="avatar avatar--large" src="/github-tracker/avatar.jpg" alt="Khazic avatar" />
+              <strong>@{DEFAULT_USER}</strong>
+            </div>
             <p>
               This site is intentionally scoped to one account only: public PRs, public issues, and
               the ongoing debugging log of one overfit human.
@@ -515,7 +518,10 @@ function App() {
       <section className="summary-grid">
         <article className="panel stat-card">
           <span className="stat-label">Tracking</span>
-          <strong>{DEFAULT_USER}</strong>
+          <div className="tracking-user">
+            <img className="avatar" src="/github-tracker/avatar.jpg" alt="Khazic avatar" />
+            <strong>{DEFAULT_USER}</strong>
+          </div>
           <p>Public GitHub activity only</p>
         </article>
         <article className="panel stat-card">

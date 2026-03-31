@@ -92,9 +92,30 @@
   gap: 10px;
 }
 
+.identity-card__user,
+.tracking-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .identity-card strong {
   font-size: 2rem;
   color: var(--text-strong);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.avatar--large {
+  width: 48px;
+  height: 48px;
 }
 
 .lede {
@@ -198,6 +219,10 @@ button {
   margin: 10px 0 4px;
   font-size: 2rem;
   color: var(--text-strong);
+}
+
+.tracking-user strong {
+  margin: 0;
 }
 
 .stat-actions {
