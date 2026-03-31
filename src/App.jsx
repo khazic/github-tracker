@@ -171,6 +171,7 @@ function buildContributionBoard(pullRequests, issues) {
 
 function ContributionBoard({ board, generatedAt }) {
   const [expanded, setExpanded] = useState(false)
+  const [hoveredRepo, setHoveredRepo] = useState('')
   const visibleRows = expanded ? board.rows : board.rows.slice(0, 5)
 
   return (
@@ -199,7 +200,12 @@ function ContributionBoard({ board, generatedAt }) {
             const issueLevel = row.issues === 0 ? 0 : Math.max(0.08, row.issues / board.maxIssues)
 
             return (
-              <div key={row.repo} className="board-item">
+              <div
+                key={row.repo}
+                className="board-item"
+                onMouseEnter={() => setHoveredRepo(row.repo)}
+                onMouseLeave={() => setHoveredRepo('')}
+              >
                 <a
                   className="board-label"
                   href={`https://github.com/${row.repo}`}
@@ -211,7 +217,7 @@ function ContributionBoard({ board, generatedAt }) {
                 </a>
 
                 <div className="board-bars">
-                  <div className="mini-bar-row" title={`${row.prs} PRs in ${row.repo}`}>
+                  <div className="mini-bar-row">
                     <span className="mini-bar-label">PR</span>
                     <div className="mini-bar-track">
                       <div
@@ -222,7 +228,7 @@ function ContributionBoard({ board, generatedAt }) {
                     <span className="mini-bar-value">{row.prs}</span>
                   </div>
 
-                  <div className="mini-bar-row" title={`${row.issues} issues in ${row.repo}`}>
+                  <div className="mini-bar-row">
                     <span className="mini-bar-label">Issue</span>
                     <div className="mini-bar-track">
                       <div
@@ -233,6 +239,15 @@ function ContributionBoard({ board, generatedAt }) {
                     <span className="mini-bar-value">{row.issues}</span>
                   </div>
                 </div>
+
+                {hoveredRepo === row.repo ? (
+                  <div className="board-tooltip" role="tooltip">
+                    <strong>{row.repo}</strong>
+                    <span>PR {row.prs}</span>
+                    <span>Issue {row.issues}</span>
+                    <span>Updated {formatDate(row.updatedAt)}</span>
+                  </div>
+                ) : null}
               </div>
             )
           })
