@@ -5,6 +5,8 @@ const DEFAULT_USER = 'khazic'
 const PAGE_SIZE = 100
 const MAX_PAGES = 3
 const DEFAULT_THEME = 'dark'
+const AGE_BASE_YEAR = 1997
+
 function formatDate(dateString) {
   return new Intl.DateTimeFormat('en', {
     year: 'numeric',
@@ -330,6 +332,8 @@ function AttentionSection({ items }) {
 }
 
 function HeroProfile() {
+  const displayAge = new Date().getFullYear() - AGE_BASE_YEAR
+
   return (
     <section className="panel hero-profile">
       <div className="hero-profile__intro">
@@ -366,8 +370,8 @@ function HeroProfile() {
           <span className="muted">still not rage quitting</span>
         </div>
         <p className="life-summary">
-          28, caffeinated, terminally online, and still trying to turn buggy life into shippable
-          code. Big dreams, tiny balance, no rage quit yet.
+          {displayAge}, caffeinated, terminally online, and still trying to turn buggy life into
+          shippable code. Big dreams, tiny balance, no rage quit yet.
         </p>
       </div>
     </section>
