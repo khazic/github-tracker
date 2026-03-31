@@ -1,0 +1,51 @@
+:root {
+  font-family:
+    "Instrument Sans",
+    "Avenir Next",
+    "Segoe UI",
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #334155;
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(249, 115, 22, 0.16), transparent 24%),
+    linear-gradient(180deg, #fffdf8 0%, #f8fafc 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --panel: rgba(255, 255, 255, 0.78);
+  --surface: #e2e8f0;
+  --border: rgba(100, 116, 139, 0.2);
+  --text: #334155;
+  --text-strong: #0f172a;
+  --muted: #64748b;
+  --muted-strong: #475569;
+  --accent: #0f766e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
