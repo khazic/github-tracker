@@ -21,12 +21,23 @@ function useReadState() {
     })
   }
 
+  function markAllRead(items) {
+    setReadState((prev) => {
+      const next = { ...prev }
+      for (const item of items) {
+        next[item.id] = item.updated_at
+      }
+      localStorage.setItem(READ_STATE_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
   function isUnread(item) {
     const lastRead = readState[item.id]
     return !lastRead || item.updated_at > lastRead
   }
 
-  return { markRead, isUnread }
+  return { markRead, markAllRead, isUnread }
 }
 const DEFAULT_THEME = 'dark'
 const AGE_BASE_YEAR = 1997
@@ -585,7 +596,7 @@ function RecentLinks() {
 }
 
 function App() {
-  const { markRead, isUnread } = useReadState()
+  const { markRead, markAllRead, isUnread } = useReadState()
   const [pullRequests, setPullRequests] = useState([])
   const [issues, setIssues] = useState([])
   const [pullRequestFilter, setPullRequestFilter] = useState('all')
@@ -776,6 +787,13 @@ function App() {
           placeholder="Filter by owner/repo"
           aria-label="Filter by repository"
         />
+        <button
+          type="button"
+          className="mark-all-read"
+          onClick={() => markAllRead([...pullRequests, ...issues])}
+        >
+          Mark all read
+        </button>
       </section>
 
       {loading ? <div className="panel notice">Loading GitHub data...</div> : null}
