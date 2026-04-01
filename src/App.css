@@ -662,6 +662,17 @@ button {
   backdrop-filter: blur(10px);
 }
 
+.item-row.is-read,
+.attention-row.is-read {
+  opacity: 0.38;
+  transition: opacity 0.15s ease;
+}
+
+.item-row.is-read:hover,
+.attention-row.is-read:hover {
+  opacity: 0.7;
+}
+
 .empty-state {
   padding: 24px 8px 8px;
   color: var(--muted);

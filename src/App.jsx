@@ -2,6 +2,32 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 const DEFAULT_USER = 'khazic'
+const READ_STATE_KEY = 'github-tracker-read'
+
+function useReadState() {
+  const [readState, setReadState] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(READ_STATE_KEY) ?? '{}')
+    } catch {
+      return {}
+    }
+  })
+
+  function markRead(itemId, updatedAt) {
+    setReadState((prev) => {
+      const next = { ...prev, [itemId]: updatedAt }
+      localStorage.setItem(READ_STATE_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
+  function isUnread(item) {
+    const lastRead = readState[item.id]
+    return !lastRead || item.updated_at > lastRead
+  }
+
+  return { markRead, isUnread }
+}
 const DEFAULT_THEME = 'dark'
 const AGE_BASE_YEAR = 1997
 const RECENT_LINKS = [
@@ -263,7 +289,7 @@ function ContributionBoard({ board, generatedAt }) {
   )
 }
 
-function Section({ title, items, filter, setFilter, groups, searchType, includeMerged = false }) {
+function Section({ title, items, filter, setFilter, groups, searchType, includeMerged = false, isUnread, markRead }) {
   const [expandedRepos, setExpandedRepos] = useState({})
   const filterOptions = includeMerged
     ? ['all', 'open', 'draft', 'merged', 'closed_unmerged']
@@ -320,10 +346,11 @@ function Section({ title, items, filter, setFilter, groups, searchType, includeM
                 {group.items.slice(0, expandedRepos[group.repo] ? group.items.length : 5).map((item) => (
                   <a
                     key={item.id}
-                    className="item-row"
+                    className={`item-row${isUnread(item) ? '' : ' is-read'}`}
                     href={item.html_url}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => markRead(item.id, item.updated_at)}
                   >
                     <span className={`status-dot ${item.derivedState ?? item.state}`} aria-hidden="true" />
                     <div className="item-copy">
@@ -396,7 +423,7 @@ function getAttentionReason(item) {
   return null
 }
 
-function AttentionSection({ items }) {
+function AttentionSection({ items, isUnread, markRead }) {
   return (
     <section className="panel attention-panel">
       <div className="section-header">
@@ -413,10 +440,11 @@ function AttentionSection({ items }) {
           items.map((item) => (
             <a
               key={item.id}
-              className="attention-row"
+              className={`attention-row${isUnread(item) ? '' : ' is-read'}`}
               href={item.html_url}
               target="_blank"
               rel="noreferrer"
+              onClick={() => markRead(item.id, item.updated_at)}
             >
               <span className={`status-dot ${item.derivedState ?? item.state}`} aria-hidden="true" />
               <div className="item-copy">
@@ -557,6 +585,7 @@ function RecentLinks() {
 }
 
 function App() {
+  const { markRead, isUnread } = useReadState()
   const [pullRequests, setPullRequests] = useState([])
   const [issues, setIssues] = useState([])
   const [pullRequestFilter, setPullRequestFilter] = useState('all')
@@ -755,7 +784,7 @@ function App() {
 
       {!loading && !error ? (
         <>
-          <AttentionSection items={attentionPullRequests} />
+          <AttentionSection items={attentionPullRequests} isUnread={isUnread} markRead={markRead} />
           <div className="section-grid">
             <Section
               title="Pull Requests"
@@ -765,6 +794,8 @@ function App() {
               groups={groupedPrs}
               searchType="pulls"
               includeMerged
+              isUnread={isUnread}
+              markRead={markRead}
             />
             <Section
               title="Issues"
@@ -773,6 +804,8 @@ function App() {
               setFilter={setIssueFilter}
               groups={groupedIssues}
               searchType="issues"
+              isUnread={isUnread}
+              markRead={markRead}
             />
           </div>
         </>
