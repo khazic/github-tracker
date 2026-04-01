@@ -3,7 +3,7 @@ const PAGE_SIZE = 100
 const MAX_PAGES = 3
 const GITHUB_API = 'https://api.github.com'
 const CACHE_KEY = 'https://github-tracker-cache.internal/data'
-const CACHE_TTL_SECONDS = 300
+const CACHE_TTL_SECONDS = 3600
 
 function githubHeaders(env) {
   const headers = {

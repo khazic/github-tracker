@@ -72,7 +72,7 @@ async function fetchTrackerData() {
 
   if (workerEndpoint) {
     try {
-      const workerResponse = await fetch(`${workerEndpoint.replace(/\/$/, '')}/tracker?refresh=1`, {
+      const workerResponse = await fetch(`${workerEndpoint.replace(/\/$/, '')}/tracker`, {
         cache: 'no-store',
       })
 
